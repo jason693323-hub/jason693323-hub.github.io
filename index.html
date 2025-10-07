@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今天，这座城市的情绪是什么颜色？</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- 配置Tailwind CSS -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5', // 主色调：平静的紫色
+                        secondary: '#10B981', // 辅助色：自然的绿色
+                        accent: '#F59E0B', // 强调色：温暖的橙色
+                        light: '#F9FAFB', // 浅色背景
+                        dark: '#1F2937', // 深色文字
+                        neutral: '#6B7280', // 中性色
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans SC', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .animate-float {
+                animation: float 6s ease-in-out infinite;
+            }
+            .animate-pulse-slow {
+                animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-light to-blue-50 min-h-screen font-sans">
+    <!-- 页面顶部导航 -->
+    <header class="w-full bg-white/80 backdrop-blur-md shadow-sm fixed top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-heart-o text-primary text-xl"></i>
+                <span class="text-dark font-medium text-lg">静流 MindFlow</span>
+            </div>
+            <nav class="hidden md:flex space-x-8">
+                <a href="#about" class="text-neutral hover:text-primary transition-colors duration-200">关于我们</a>
+                <a href="#privacy" class="text-neutral hover:text-primary transition-colors duration-200">隐私承诺</a>
+                <a href="#contact" class="text-neutral hover:text-primary transition-colors duration-200">联系我们</a>
+            </nav>
+            <button class="md:hidden text-dark">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+    </header>
+ 
+    <!-- 主要内容区域 -->
+    <main class="container mx-auto px-4 pt-28 pb-16">
+        <!-- 英雄区域 -->
+        <section class="text-center max-w-4xl mx-auto mb-16">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-dark mb-6 leading-tight text-shadow">
+                今天，<span class="text-primary">这座城市</span>的情绪是什么颜色？
+            </h1>
+            <p class="text-neutral text-lg md:text-xl mb-8 max-w-2xl mx-auto">
+                花10秒，分享你的今日情绪。你不是一个人，我们一起看见彼此的情绪。
+            </p>
+            <div class="flex justify-center mb-12">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-primary">
+                    <i class="fa fa-lock mr-2"></i> 完全匿名 · 24小时后删除记录
+                </span>
+            </div>
+        </section>
+ 
+        <!-- 情绪提交表单 -->
+        <section class="max-w-2xl mx-auto mb-20 bg-white rounded-2xl shadow-lg p-6 md:p-8 transition-all duration-300 hover:shadow-xl">
+            <form id="emotionForm" class="space-y-6">
+                <div class="space-y-4">
+                    <label for="city" class="block text-sm font-medium text-dark">你所在的城市（可选）</label>
+                    <input
+                        type="text"
+                        id="city"
+                        placeholder="例如：北京、上海"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                    >
+                </div>
+                
+                <div class="space-y-4">
+                    <label for="emotion" class="block text-sm font-medium text-dark">今天的心情，用一个词描述</label>
+                    <input
+                        type="text"
+                        id="emotion"
+                        placeholder="例如：疲惫、平静、焦虑"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                        required
+                    >
+                </div>
+                
+                <div class="space-y-4">
+                    <label class="block text-sm font-medium text-dark">是否愿意接收情绪简报？</label>
+                    <div class="flex items-center space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="receiveUpdates" value="yes" class="form-radio h-5 w-5 text-primary focus:ring-primary">
+                            <span class="ml-2 text-neutral">是，我想了解更多</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="receiveUpdates" value="no" class="form-radio h-5 w-5 text-primary focus:ring-primary" checked>
+                            <span class="ml-2 text-neutral">否，仅参与本次活动</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="emailContainer" class="hidden space-y-2">
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="请输入你的邮箱"
+                        class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                    >
+                    <p class="text-xs text-neutral">我们不会向第三方分享你的邮箱，仅用于发送情绪简报</p>
+                </div>
+                
+                <button
+                    type="submit"
+                    class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50"
+                >
+                    <i class="fa fa-paper-plane mr-2"></i> 提交我的情绪
+                </button>
+            </form>
+        </section>
+    </main>
+    
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <i class="fa fa-heart-o text-primary text-xl"></i>
+                        <span class="text-white font-medium text-lg">静流 MindFlow</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">用数据连接城市中的每一种情绪</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#about" class="text-gray-400 hover:text-primary transition-colors duration-200">关于我们</a>
+                    <a href="#privacy" class="text-gray-400 hover:text-primary transition-colors duration-200">隐私政策</a>
+                    <a href="#contact" class="text-gray-400 hover:text-primary transition-colors duration-200">联系我们</a>
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-700 text-center text-gray-400 text-sm">
+                © 2023 静流 MindFlow. 保留所有权利。
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // 监听是否接收更新的选择
+        document.querySelectorAll('input[name="receiveUpdates"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const emailContainer = document.getElementById('emailContainer');
+                if (this.value === 'yes') {
+                    emailContainer.classList.remove('hidden');
+                } else {
+                    emailContainer.classList.add('hidden');
+                }
+            });
+        });
+        
+        // 表单提交处理
+        document.getElementById('emotionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 模拟表单提交成功
+            alert('情绪分享成功！感谢您的参与。');
+            document.getElementById('emotionForm').reset();
+            document.getElementById('emailContainer').classList.add('hidden');
+        });
+        
+        // 滚动时改变导航栏样式
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            if (window.scrollY > 10) {
+                header.classList.add('py-2');
+                header.classList.remove('py-3');
+                header.classList.add('shadow');
+            } else {
+                header.classList.add('py-3');
+                header.classList.remove('py-2');
+                header.classList.remove('shadow');
+            }
+        });
+    </script>
+</body>
+</html>
